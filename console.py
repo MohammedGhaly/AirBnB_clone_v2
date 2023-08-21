@@ -4,7 +4,7 @@ import cmd
 import re
 import sys
 from models.base_model import BaseModel
-from models.__init__ import storage
+from models import storage
 from models.user import User
 from models.place import Place
 from models.state import State
@@ -116,35 +116,34 @@ class HBNBCommand(cmd.Cmd):
 
     def do_create(self, args):
         """ Create an object of any class"""
-        if not args:
+        try:
+            if not args:
+                raise SyntaxError()
+            arg_list = args.split(" ")
+
+            kwargs = {}
+            for i in range(1, len(arg_list)):
+                key, value = tuple(arg_list[i].split("="))
+                if value[0] == '"':
+                    value = value.strip('"').replace("_", " ")
+                else:
+                    try:
+                        value = eval(value)
+                    except (SyntaxError, NameError):
+                        continue
+                kwargs[key] = value
+
+            if kwargs == {}:
+                new_instance = eval(arg_list[0])()
+            else:
+                new_instance = eval(arg_list[0])(**kwargs)
+                storage.new(new_instance)
+            print(new_instance.id)
+            new_instance.save()
+        except SyntaxError:
             print("** class name missing **")
-            return
-
-        arguments = args.split()
-        class_name = arguments[0]
-        if class_name not in HBNBCommand.classes:
+        except NameError:
             print("** class doesn't exist **")
-            return
-
-        new_instance = HBNBCommand.classes[class_name]()
-
-        if not len(arguments) == 0:
-            pattern = r'(\w+)\s*=\s*"([^"]*)"|(\w+)\s*=\s*([-\d.]+)'
-            matches = re.findall(pattern, args)
-            parameters_list = [(match[0] or match[2], match[1] or match[3])
-                               for match in matches]
-
-            for element in parameters_list:
-                key = element[0]
-                typ = type((HBNBCommand.classes[class_name].__dict__[key]))
-                value = typ(element[1])
-                if typ is str:
-                    value = value.replace('_', ' ')
-                new_instance.__setattr__(key, value)
-
-        storage.save()
-        print(new_instance.id)
-        storage.save()
 
     def help_create(self):
         """ Help information for the create method """
@@ -226,13 +225,12 @@ class HBNBCommand(cmd.Cmd):
             if args not in HBNBCommand.classes:
                 print("** class doesn't exist **")
                 return
-            for k, v in storage._FileStorage__objects.items():
+            for k, v in storage.all(HBNBCommand.classes[args]).items():
                 if k.split('.')[0] == args:
                     print_list.append(str(v))
         else:
-            for k, v in storage._FileStorage__objects.items():
+            for k, v in storage.all().items():
                 print_list.append(str(v))
-
         print(print_list)
 
     def help_all(self):
