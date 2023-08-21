@@ -6,7 +6,7 @@ from models.state import State
 from models.city import City
 # from models.amenity import Amenity
 from models.place import Place
-# from models.review import Review
+from models.review import Review
 from os import getenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
