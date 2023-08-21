@@ -6,7 +6,7 @@ from models.user import User
 from models.place import Place
 from models.review import Review
 from models.state import State
-# from models.amenity import Amenity
+from models.amenity import Amenity
 from os import getenv
 
 if getenv('HBNB_TYPE_STORAGE') == 'db':
