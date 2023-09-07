@@ -1,3 +1,8 @@
+#!/usr/bin/python3
+''''
+fabfile to pack static folder to an archive
+and distribute it to web servers
+'''
 import os.path
 from datetime import datetime
 from fabric.api import env
